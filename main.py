@@ -97,7 +97,7 @@ result2 = response3.json()['desc']
 if sel_exam_num == len(exams)+1:
     sel_exam['desc'] = '{} {} {}'.format(result2['studentname'],result2['examTypeStr'],result2['examName'])
 # print('姓名  {}'.format(result2['studentname']))
-text1 = '{}  实际成绩：{}  卷面成绩：{}  班级排名：{}  学校排名：{}  全市排名：{}'
+text1 = '{}  实际成绩：{:<7} 卷面成绩：{:<7} 班级排名：{:<3} 学校排名：{:<5} 全市排名：{:<6}'
 output = [sel_exam['desc']]
 for i in result2['stuOrder']['subjects']:
     # print(text1.format(i['name'],i['score'],i['paperScore'],i['classOrder'],i['schoolOrder'],i['unionOrder']))
