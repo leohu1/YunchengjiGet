@@ -1,5 +1,3 @@
-import uuid
-
 import requests
 
 
@@ -17,16 +15,15 @@ class YunchengjiAPI:
         self.user_agent_2 = "Mozilla/5.0 (Linux; Android 12; SDY-AN00 Build/V417IR; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/89.0.4389.72 MQQBrowser/6.2 TBS/046295 Mobile Safari/537.36"
         self.cookies = "SESSIONID={}"
         # sessionID
-        if session_id == "":
-            self.session_id = str(uuid.uuid4())
-        else:
-            self.session_id = session_id
+        self.session_id = session_id
 
     def login(self,username,password):
-        '''
+        """
         登录系统
+        :param username: 用户名
+        :param password: 密码
         :return: None
-        '''
+        """
         headers1 = {
             'User-Agent': self.user_agent_1,
             'Accept-Encoding': "gzip",
@@ -40,13 +37,17 @@ class YunchengjiAPI:
             'Accept-Encoding': "gzip",
             'Cookie': self.cookies.format(self.session_id)
         }
-        requests.get(self.login_url_2, headers=headers2)
+        response2 = requests.get(self.login_url_2, headers=headers2)
+        result = response2.json()['result']
+        if result == 'sessionout':
+            return -1
+        return 0
 
     def get_exam_list(self):
-        '''
+        """
         获取考试列表
-        :return:
-        '''
+        :return:exams
+        """
         headers = {
             'User-Agent': self.user_agent_1,
             'Accept-Encoding': "gzip",
@@ -55,3 +56,49 @@ class YunchengjiAPI:
             'Cookie': self.cookies.format(self.session_id)
         }
         response = requests.post(self.index_url, headers=headers)
+        if response.json()['result'] == 'sessionout':
+            print('用户名或密码错误')
+            return -1
+        result = response.json()['desc']['selist']
+        return result
+
+    def get_exam_detail_total(self,exam_id):
+        """
+        获取考试详情
+        :param exam_id: 考试id
+        :return: exam_detail
+        """
+        response = requests.get(self.total_url.format(exam_id), headers={
+            'User-Agent': self.user_agent_2,
+            'Accept': "application/json, text/plain, */*",
+            'pragma': "no-cache",
+            'cache-control': "no-cache",
+            'x-requested-with': "com.wish.ycj",
+            'sec-fetch-site': "same-origin",
+            'sec-fetch-mode': "cors",
+            'sec-fetch-dest': "empty",
+            'referer': "https://www.yunchengji.net/app/student/report/html/report.html",
+            'accept-language': "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7",
+            'Cookie': self.cookies.format(self.session_id)
+        })
+        result = response.json()['desc']
+        return result
+
+    def logout(self):
+        """
+        登出
+        :return: session_id
+        """
+        headers1 = {
+            'User-Agent': self.user_agent_1,
+            'Accept-Encoding': "gzip",
+            'content-length': "0",
+            'Cookie': self.cookies.format(self.session_id)
+        }
+        requests.post(self.logout_url_1, headers=headers1)
+        headers2 = {
+            'User-Agent': self.user_agent_1,
+            'Accept-Encoding': "gzip"
+        }
+        response = requests.get(self.logout_url_2, headers=headers2)
+        return response.cookies.get('SESSIONID')

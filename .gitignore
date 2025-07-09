@@ -1,2 +1,5 @@
-uuid.txt
+session_id.txt
 /output/
+/build/
+/dist/
+main.spec
