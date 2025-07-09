@@ -74,7 +74,7 @@ output = [sel_exam['desc']]
 for i in result2['stuOrder']['subjects']:
     output.append(text1.format(i['name'],i['score'],i['paperScore'],i['classOrder'],i['schoolOrder'],i['unionOrder']))
 scoreGap = result2['stuOrder']['scoreGap']
-text2 = '参与考试的人数  班级：{}  学校：{}  全市：{}\n最高分  班级：{}  学校：{}  全市：{}\n平均分  班级：{}  学校：{}  全市：{}'.format(scoreGap['classNum'],scoreGap['schoolNum'],scoreGap['unionNum'],scoreGap['classTop'],scoreGap['schoolTop'],scoreGap['unionTop'],scoreGap['classAvg'],scoreGap['schoolAvg'],scoreGap['unionAvg'])
+text2 = '总人数  班级：{:<7}  学校：{:<7}  全市：{:<7}\n最高分  班级：{:<7}  学校：{:<7}  全市：{:<7}\n平均分  班级：{:<7}  学校：{:<7}  全市：{:<7}'.format(scoreGap['classNum'],scoreGap['schoolNum'],scoreGap['unionNum'],scoreGap['classTop'],scoreGap['schoolTop'],scoreGap['unionTop'],scoreGap['classAvg'],scoreGap['schoolAvg'],scoreGap['unionAvg'])
 output.append(text2)
 # 写入文件
 if not os.path.exists('output'):
