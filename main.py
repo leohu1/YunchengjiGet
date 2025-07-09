@@ -37,10 +37,10 @@ if login_result == -1:
 
 # 获取考试列表
 print('获取考试列表中')
-result1 = ycj.get_exam_list()
+exam_list = ycj.get_exam_list()
 # 整理并显示考试列表
 exams = []
-for i in result1:
+for i in exam_list:
     exams.append({'desc':'{} {} {} {} {}'.format(i['studentname'],i['date'],i['examdesc'],i['examtypestr'],i['name']),'id':i['id']})
 print('考试列表：')
 for i in range(len(exams)):
@@ -65,17 +65,43 @@ except IndexError:
 
 # 获取考试详情
 print('获取考试详情中')
-result2 = ycj.get_exam_detail_total(sel_exam['id'])
+exam_detail_total = ycj.get_exam_detail_total(sel_exam['id'])
 # 整理并保存考试详情
 if sel_exam_num == len(exams)+1:
-    sel_exam['desc'] = '{} {} {}'.format(result2['studentname'],result2['examTypeStr'],result2['examName'])
+    sel_exam['desc'] = '{} {} {}'.format(exam_detail_total['studentname'],exam_detail_total['examTypeStr'],exam_detail_total['examName'])
 text1 = '{}  实际成绩：{:<7} 卷面成绩：{:<7} 班级排名：{:<3} 学校排名：{:<5} 全市排名：{:<6}'
-output = [sel_exam['desc']]
-for i in result2['stuOrder']['subjects']:
+output = [sel_exam['desc'],'全科','成绩单']
+for i in exam_detail_total['stuOrder']['subjects']:
     output.append(text1.format(i['name'],i['score'],i['paperScore'],i['classOrder'],i['schoolOrder'],i['unionOrder']))
-scoreGap = result2['stuOrder']['scoreGap']
-text2 = '总人数  班级：{:<7}  学校：{:<7}  全市：{:<7}\n最高分  班级：{:<7}  学校：{:<7}  全市：{:<7}\n平均分  班级：{:<7}  学校：{:<7}  全市：{:<7}'.format(scoreGap['classNum'],scoreGap['schoolNum'],scoreGap['unionNum'],scoreGap['classTop'],scoreGap['schoolTop'],scoreGap['unionTop'],scoreGap['classAvg'],scoreGap['schoolAvg'],scoreGap['unionAvg'])
-output.append(text2)
+scoreGap = exam_detail_total['stuOrder']['scoreGap']
+text2 = '考生数  班级：{:<7} 学校：{:<7} 全市：{:<7}\n最高分  班级：{:<7} 学校：{:<7} 全市：{:<7}\n平均分  班级：{:<7} 学校：{:<7} 全市：{:<7}'
+output.append('分数差距')
+output.append(text2.format(scoreGap['classNum'],scoreGap['schoolNum'],scoreGap['unionNum'],scoreGap['classTop'],scoreGap['schoolTop'],scoreGap['unionTop'],scoreGap['classAvg'],scoreGap['schoolAvg'],scoreGap['unionAvg']))
+output.append('')
+
+# 获取科目列表
+print('获取科目列表中')
+subject_list = ycj.get_subject_list(sel_exam['id'])
+text3 = '题量  简单题：{:<7} 中等题：{:<7} 难题：{:<7}\n分值  简单题：{:<7} 中等题：{:<7} 难题：{:<7}\n丢分  简单题：{:<7} 中等题：{:<7} 难题：{:<7}\n得分  简单题：{:<7} 中等题：{:<7} 难题：{:<7}'
+text4 = '{:<8} 得分：{:<5}/{:<5} 班得分率：{:<7} 校得分率：{:<7} 市得分率：{:<7}'
+for i in subject_list:
+    print('获取 {} 单科详情中'.format(i['name']))
+    output.append(i['name'])
+    # 获取数据
+    subject_data = ycj.get_exam_detail_subject(sel_exam['id'],i['id'])
+    questions_data = ycj.get_exam_detail_subject_questions(sel_exam['id'],i['id'])
+    # 综合数据
+    output.append('分数差距')
+    scoreGap = subject_data['stuOrder']['scoreGap']
+    output.append(text2.format(scoreGap['classNum'],scoreGap['schoolNum'],scoreGap['unionNum'],scoreGap['classTop'],scoreGap['schoolTop'],scoreGap['unionTop'],scoreGap['classAvg'],scoreGap['schoolAvg'],scoreGap['unionAvg']))
+    output.append('难度失分分析')
+    output.append(text3.format(subject_data['loseScoreCount1'],subject_data['loseScoreCount2'],subject_data['loseScoreCount3'],subject_data['loseTotalScore1'],subject_data['loseTotalScore2'],subject_data['loseTotalScore3'],subject_data['loseScore1'],subject_data['loseScore2'],subject_data['loseScore3'],subject_data['loseTotalRateScore1'],subject_data['loseTotalRateScore2'],subject_data['loseTotalRateScore3']))
+    # 小分查询
+    output.append('小分情况')
+    for j in range(len(subject_data['questRates'])):
+        output.append(text4.format(subject_data['questRates'][j]['title'],questions_data[j]['score'],questions_data[j]['totalScore'],subject_data['questRates'][j]['classScoreRate'],subject_data['questRates'][j]['schoolScoreRate'],subject_data['questRates'][j]['unionScoreRate']))
+    output.append('')
+
 # 写入文件
 if not os.path.exists('output'):
     os.mkdir('output')

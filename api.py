@@ -8,6 +8,9 @@ class YunchengjiAPI:
         self.login_url_2 = "https://www.yunchengji.net/app/student/login"
         self.index_url = "https://www.yunchengji.net/app/student/index"
         self.total_url = "https://www.yunchengji.net/app/student/cj/report-total?seid={}"
+        self.subject_list_url = "https://www.yunchengji.net/app/student/cj/subject-list?seid={}"
+        self.subject_url = "https://www.yunchengji.net/app/student/cj/report-subject?seid={}&subjectid={}"
+        self.question_list_url = "https://www.yunchengji.net/app/student/cj/question-list?seid={}&subjectid={}"
         self.logout_url_1 = "https://www.yunchengji.net/app/logout"
         self.logout_url_2 = "https://www.yunchengji.net/app/student/session/sessionout"
         # Headers
@@ -68,7 +71,7 @@ class YunchengjiAPI:
         :param exam_id: 考试id
         :return: exam_detail
         """
-        response = requests.get(self.total_url.format(exam_id), headers={
+        headers = {
             'User-Agent': self.user_agent_2,
             'Accept': "application/json, text/plain, */*",
             'pragma': "no-cache",
@@ -80,8 +83,83 @@ class YunchengjiAPI:
             'referer': "https://www.yunchengji.net/app/student/report/html/report.html",
             'accept-language': "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7",
             'Cookie': self.cookies.format(self.session_id)
-        })
+        }
+        response = requests.get(self.total_url.format(exam_id), headers=headers)
         result = response.json()['desc']
+        return result
+
+    def get_subject_list(self,exam_id):
+        """
+        获取科目列表
+        :param exam_id: 考试id
+        :return: subject_list
+        """
+        headers = {
+            'User-Agent': self.user_agent_2,
+            'Accept': "application/json, text/plain, */*",
+            'Accept-Encoding': "gzip, deflate",
+            'pragma': "no-cache",
+            'cache-control': "no-cache",
+            'x-requested-with': "com.wish.ycj",
+            'sec-fetch-site': "same-origin",
+            'sec-fetch-mode': "cors",
+            'sec-fetch-dest': "empty",
+            'referer': "https://www.yunchengji.net/app/student/report/html/report.html",
+            'accept-language': "zh-TW,zh-CN;q=0.9,zh;q=0.8,en-US;q=0.7,en;q=0.6",
+            'Cookie': self.cookies.format(self.session_id)
+        }
+        response = requests.get(self.subject_list_url.format(exam_id), headers=headers)
+        result = response.json()['desc']
+        return result
+
+    def get_exam_detail_subject(self,exam_id,subject_id):
+        """
+        获取单科数据
+        :param exam_id: 考试id
+        :param subject_id: 科目id
+        :return:单科数据
+        """
+        headers = {
+            'User-Agent': self.user_agent_2,
+            'Accept': "application/json, text/plain, */*",
+            'Accept-Encoding': "gzip, deflate",
+            'pragma': "no-cache",
+            'cache-control': "no-cache",
+            'x-requested-with': "com.wish.ycj",
+            'sec-fetch-site': "same-origin",
+            'sec-fetch-mode': "cors",
+            'sec-fetch-dest': "empty",
+            'referer': "https://www.yunchengji.net/app/student/report/html/report.html",
+            'accept-language': "zh-TW,zh-CN;q=0.9,zh;q=0.8,en-US;q=0.7,en;q=0.6",
+            'Cookie': self.cookies.format(self.session_id)
+        }
+        response = requests.get(self.subject_url.format(exam_id,subject_id), headers=headers)
+        result = response.json()['desc']
+        return result
+
+    def get_exam_detail_subject_questions(self,exam_id,subject_id):
+        """
+        获取单科小分
+        :param exam_id:考试id
+        :param subject_id:科目id
+        :return:单科小分数据
+        """
+        headers = {
+            'User-Agent': self.user_agent_2,
+            'Accept': "application/json, text/plain, */*",
+            'Accept-Encoding': "gzip, deflate",
+            'pragma': "no-cache",
+            'cache-control': "no-cache",
+            'x-requested-with': "com.wish.ycj",
+            'sec-fetch-site': "same-origin",
+            'sec-fetch-mode': "cors",
+            'sec-fetch-dest': "empty",
+            'referer': "https://www.yunchengji.net/app/student/report/html/sub-analysis.html",
+            'accept-language': "zh-TW,zh-CN;q=0.9,zh;q=0.8,en-US;q=0.7,en;q=0.6",
+            'Cookie': self.cookies.format(self.session_id)
+        }
+        response = requests.get(self.question_list_url.format(exam_id,subject_id), headers=headers)
+        result = response.json()['desc']['questions']
         return result
 
     def logout(self):
