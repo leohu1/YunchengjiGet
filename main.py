@@ -98,7 +98,7 @@ def getAndShowExamDetail(examId):
         csv_content.append(',,,,,')
 
     # 写入文件
-    outputDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output")
+    outputDir = os.path.join(os.getcwd(), "output")
     outputTxtPath = os.path.join(outputDir, "{}.txt".format(examName))
     outputCsvPath = os.path.join(outputDir, "{}.csv".format(examName))
     outputXlsxPath = os.path.join(outputDir, "{}.xlsx".format(examName))

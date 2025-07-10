@@ -3,3 +3,5 @@ session_id.txt
 /build/
 /dist/
 main.spec
+test.py
+test.spec
