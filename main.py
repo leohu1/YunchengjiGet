@@ -111,7 +111,7 @@ def getAndShowExamDetail(examId):
     df = pd.read_csv(outputCsvPath.format(examName))
     df.to_excel(outputXlsxPath, index=False, header=False)
     os.remove(outputCsvPath)
-    print('结果已保存到{}'.format(outputDir))
+    print('结果已保存到 {} 目录下'.format(outputDir))
 
 # 获取用户名密码
 user = input("输入手机号/用户名(按Enter键确认)：")
@@ -131,28 +131,32 @@ exam_list = ycj.get_exam_list()
 exams = []
 for exam in exam_list:
     exams.append({'desc':'{} {} {} {} {}'.format(exam['studentname'], exam['date'], exam['examdesc'], exam['examtypestr'], exam['name']), 'id':exam['id']})
-print('考试列表：')
-for i in range(len(exams)):
-    print('[{}] {}'.format(i+1,exams[i]['desc']))
-print('[{}] 手动输入考试ID'.format(len(exams)+1))
-# 选择考试
-selectedExamId = 0
-try:
-    selectedNumber = int(input('请输入要获取的考试的序号(按Enter键确认)：'))
-    if selectedNumber == len(exams)+1:
-        selectedExamId = int(input('请输入要获取的考试的考试ID(按Enter键确认)：'))
-    else:
-        selectedExamId = exams[selectedNumber-1]['id']
-except ValueError:
-    print('输入的不是整数')
-    logout()
-    sys.exit(1)
-except IndexError:
-    print('不存在该选项')
-    logout()
-    sys.exit(1)
-
-getAndShowExamDetail(selectedExamId)
+while True:
+    print('操作列表：')
+    print('[0] 退出系统')
+    print('获取考试数据：')
+    for i in range(len(exams)):
+        print('[{}] {}'.format(i+1,exams[i]['desc']))
+    print('[{}] 手动输入考试ID'.format(len(exams)+1))
+    # 选择考试
+    selectedExamId = 0
+    try:
+        selectedNumber = int(input('请输入要执行的操作的序号(按Enter键确认)：'))
+        if selectedNumber == 0:
+            break
+        elif selectedNumber == len(exams)+1:
+            selectedExamId = int(input('请输入要获取的考试的考试ID(按Enter键确认)：'))
+        else:
+            selectedExamId = exams[selectedNumber-1]['id']
+    except ValueError:
+        print('输入的不是整数')
+        logout()
+        sys.exit(1)
+    except IndexError:
+        print('不存在该选项')
+        logout()
+        sys.exit(1)
+    getAndShowExamDetail(selectedExamId)
 
 # 登出
 logout()
