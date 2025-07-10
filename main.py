@@ -1,9 +1,7 @@
 import os
 import sys
 import uuid
-
 import pandas as pd
-
 import api
 
 # 提示文本
@@ -41,6 +39,80 @@ def logout():
     with open('session_id.txt', 'w+', encoding='utf-8') as f:
         f.write(content)
 
+# 获取考试信息并打印出来
+def getAndShowExamDetail(examId):
+    """
+    :param id 考试id
+    :return: None
+    """
+    # 获取考试详情
+    print('获取考试详情中')
+    exam_detail_total = ycj.get_exam_detail_total(examId)
+
+    # 整理并保存考试详情
+    examName = '{}-{}'.format(exam_detail_total['studentname'], exam_detail_total['examName'])
+    output = [examName,'全科','成绩单']
+    csv_content = [',,,,,','{},,,,,'.format(examName),'全科,,,,,','成绩单,,,,,',csv1]
+    for subject in exam_detail_total['stuOrder']['subjects']:
+        output.append(text1.format(subject['name'],subject['score'],subject['fullScore'],subject['paperScore'],subject['fullScore'],subject['classOrder'],subject['schoolOrder'],subject['unionOrder']))
+        csv_content.append(csv2.format(subject['name'],subject['score'],subject['fullScore'],subject['paperScore'],subject['fullScore'],subject['classOrder'],subject['schoolOrder'],subject['unionOrder']))
+    scoreGap = exam_detail_total['stuOrder']['scoreGap']
+    output.append('分数差距')
+    csv_content.append('分数差距,,,,,')
+    output.append(text2.format(scoreGap['classNum'],scoreGap['schoolNum'],scoreGap['unionNum'],scoreGap['classTop'],scoreGap['schoolTop'],scoreGap['unionTop'],scoreGap['classAvg'],scoreGap['schoolAvg'],scoreGap['unionAvg']))
+    csv_content.append(csv3)
+    csv_content.append(csv4.format(scoreGap['classNum'],scoreGap['schoolNum'],scoreGap['unionNum'],scoreGap['classTop'],scoreGap['schoolTop'],scoreGap['unionTop'],scoreGap['classAvg'],scoreGap['schoolAvg'],scoreGap['unionAvg']))
+    output.append('')
+    csv_content.append(',,,,,')
+
+    # 获取科目列表
+    print('获取科目列表中')
+    subject_list = ycj.get_subject_list(examId)
+    for subject in subject_list:
+        print('获取 {} 单科详情中'.format(subject['name']))
+        output.append(subject['name'])
+        csv_content.append('{},,,,,'.format(subject['name']))
+        # 获取数据
+        subject_data = ycj.get_exam_detail_subject(examId,subject['id'])
+        questions_data = ycj.get_exam_detail_subject_questions(examId,subject['id'])
+        # 综合数据
+        output.append('分数差距')
+        csv_content.append('分数差距,,,,,')
+        scoreGap = subject_data['stuOrder']['scoreGap']
+        csv_content.append(csv3)
+        output.append(text2.format(scoreGap['classNum'],scoreGap['schoolNum'],scoreGap['unionNum'],scoreGap['classTop'],scoreGap['schoolTop'],scoreGap['unionTop'],scoreGap['classAvg'],scoreGap['schoolAvg'],scoreGap['unionAvg']))
+        csv_content.append(csv4.format(scoreGap['classNum'],scoreGap['schoolNum'],scoreGap['unionNum'],scoreGap['classTop'],scoreGap['schoolTop'],scoreGap['unionTop'],scoreGap['classAvg'],scoreGap['schoolAvg'],scoreGap['unionAvg']))
+        output.append('难度失分分析')
+        csv_content.append('难度失分分析,,,,,')
+        output.append(text3.format(subject_data['loseScoreCount1'],subject_data['loseScoreCount2'],subject_data['loseScoreCount3'],subject_data['loseTotalScore1'],subject_data['loseTotalScore2'],subject_data['loseTotalScore3'],subject_data['loseScore1'],subject_data['loseScore2'],subject_data['loseScore3'],subject_data['loseTotalRateScore1'],subject_data['loseTotalRateScore2'],subject_data['loseTotalRateScore3']))
+        csv_content.append(csv5)
+        csv_content.append(csv6.format(subject_data['loseScoreCount1'],subject_data['loseScoreCount2'],subject_data['loseScoreCount3'],subject_data['loseTotalScore1'],subject_data['loseTotalScore2'],subject_data['loseTotalScore3'],subject_data['loseScore1'],subject_data['loseScore2'],subject_data['loseScore3'],subject_data['loseTotalRateScore1'],subject_data['loseTotalRateScore2'],subject_data['loseTotalRateScore3']))
+        # 小分查询
+        output.append('小分情况')
+        csv_content.append('小分情况,,,,,')
+        csv_content.append(csv7)
+        for j in range(len(subject_data['questRates'])):
+            output.append(text4.format(subject_data['questRates'][j]['title'],questions_data[j]['score'],questions_data[j]['totalScore'],subject_data['questRates'][j]['scoreRate'],subject_data['questRates'][j]['classScoreRate'],subject_data['questRates'][j]['schoolScoreRate'],subject_data['questRates'][j]['unionScoreRate']))
+            csv_content.append(csv8.format(subject_data['questRates'][j]['title'],questions_data[j]['score'],questions_data[j]['totalScore'],subject_data['questRates'][j]['scoreRate'],subject_data['questRates'][j]['classScoreRate'],subject_data['questRates'][j]['schoolScoreRate'],subject_data['questRates'][j]['unionScoreRate']))
+        output.append('')
+        csv_content.append(',,,,,')
+
+    # 写入文件
+    outputDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output")
+    outputTxtPath = os.path.join(outputDir, "{}.txt".format(examName))
+    outputCsvPath = os.path.join(outputDir, "{}.csv".format(examName))
+    outputXlsxPath = os.path.join(outputDir, "{}.xlsx".format(examName))
+    if not os.path.exists(outputDir):
+        os.mkdir(outputDir)
+    with open(outputTxtPath, 'w+', encoding='utf-8') as f:
+        f.write('\n'.join(output))
+    with open(outputCsvPath, 'w+', encoding='utf-8') as f:
+        f.write('\n'.join(csv_content))
+    df = pd.read_csv(outputCsvPath.format(examName))
+    df.to_excel(outputXlsxPath, index=False, header=False)
+    os.remove(outputCsvPath)
+    print('结果已保存到{}'.format(outputDir))
+
 # 获取用户名密码
 user = input("输入手机号/用户名(按Enter键确认)：")
 pw = input("输入密码(按Enter键确认)：")
@@ -57,92 +129,30 @@ print('获取考试列表中')
 exam_list = ycj.get_exam_list()
 # 整理并显示考试列表
 exams = []
-for i in exam_list:
-    exams.append({'desc':'{} {} {} {} {}'.format(i['studentname'],i['date'],i['examdesc'],i['examtypestr'],i['name']),'id':i['id']})
+for exam in exam_list:
+    exams.append({'desc':'{} {} {} {} {}'.format(exam['studentname'], exam['date'], exam['examdesc'], exam['examtypestr'], exam['name']), 'id':exam['id']})
 print('考试列表：')
 for i in range(len(exams)):
     print('[{}] {}'.format(i+1,exams[i]['desc']))
 print('[{}] 手动输入考试ID'.format(len(exams)+1))
 # 选择考试
-sel_exam = {}
+selectedExamId = 0
 try:
-    sel_exam_num = int(input('请输入要获取的考试的序号(按Enter键确认)：'))
-    if sel_exam_num == len(exams)+1:
-        sel_exam['id'] = int(input('请输入要获取的考试的考试ID(按Enter键确认)：'))
+    selectedNumber = int(input('请输入要获取的考试的序号(按Enter键确认)：'))
+    if selectedNumber == len(exams)+1:
+        selectedExamId = int(input('请输入要获取的考试的考试ID(按Enter键确认)：'))
     else:
-        sel_exam = exams[sel_exam_num-1]
+        selectedExamId = exams[selectedNumber-1]['id']
 except ValueError:
-    print('输入数据不合规')
+    print('输入的不是整数')
     logout()
     sys.exit(1)
 except IndexError:
-    print('不存在该考试')
+    print('不存在该选项')
     logout()
     sys.exit(1)
 
-# 获取考试详情
-print('获取考试详情中')
-exam_detail_total = ycj.get_exam_detail_total(sel_exam['id'])
-# 整理并保存考试详情
-if sel_exam_num == len(exams)+1:
-    sel_exam['desc'] = '{} {} {}'.format(exam_detail_total['studentname'],exam_detail_total['examTypeStr'],exam_detail_total['examName'])
-output = [sel_exam['desc'],'全科','成绩单']
-csv_content = [',,,,,','{},,,,,'.format(sel_exam['desc']),'全科,,,,,','成绩单,,,,,',csv1]
-for i in exam_detail_total['stuOrder']['subjects']:
-    output.append(text1.format(i['name'],i['score'],i['fullScore'],i['paperScore'],i['fullScore'],i['classOrder'],i['schoolOrder'],i['unionOrder']))
-    csv_content.append(csv2.format(i['name'],i['score'],i['fullScore'],i['paperScore'],i['fullScore'],i['classOrder'],i['schoolOrder'],i['unionOrder']))
-scoreGap = exam_detail_total['stuOrder']['scoreGap']
-output.append('分数差距')
-csv_content.append('分数差距,,,,,')
-output.append(text2.format(scoreGap['classNum'],scoreGap['schoolNum'],scoreGap['unionNum'],scoreGap['classTop'],scoreGap['schoolTop'],scoreGap['unionTop'],scoreGap['classAvg'],scoreGap['schoolAvg'],scoreGap['unionAvg']))
-csv_content.append(csv3)
-csv_content.append(csv4.format(scoreGap['classNum'],scoreGap['schoolNum'],scoreGap['unionNum'],scoreGap['classTop'],scoreGap['schoolTop'],scoreGap['unionTop'],scoreGap['classAvg'],scoreGap['schoolAvg'],scoreGap['unionAvg']))
-output.append('')
-csv_content.append(',,,,,')
-
-# 获取科目列表
-print('获取科目列表中')
-subject_list = ycj.get_subject_list(sel_exam['id'])
-for i in subject_list:
-    print('获取 {} 单科详情中'.format(i['name']))
-    output.append(i['name'])
-    csv_content.append('{},,,,,'.format(i['name']))
-    # 获取数据
-    subject_data = ycj.get_exam_detail_subject(sel_exam['id'],i['id'])
-    questions_data = ycj.get_exam_detail_subject_questions(sel_exam['id'],i['id'])
-    # 综合数据
-    output.append('分数差距')
-    csv_content.append('分数差距,,,,,')
-    scoreGap = subject_data['stuOrder']['scoreGap']
-    csv_content.append(csv3)
-    output.append(text2.format(scoreGap['classNum'],scoreGap['schoolNum'],scoreGap['unionNum'],scoreGap['classTop'],scoreGap['schoolTop'],scoreGap['unionTop'],scoreGap['classAvg'],scoreGap['schoolAvg'],scoreGap['unionAvg']))
-    csv_content.append(csv4.format(scoreGap['classNum'],scoreGap['schoolNum'],scoreGap['unionNum'],scoreGap['classTop'],scoreGap['schoolTop'],scoreGap['unionTop'],scoreGap['classAvg'],scoreGap['schoolAvg'],scoreGap['unionAvg']))
-    output.append('难度失分分析')
-    csv_content.append('难度失分分析,,,,,')
-    output.append(text3.format(subject_data['loseScoreCount1'],subject_data['loseScoreCount2'],subject_data['loseScoreCount3'],subject_data['loseTotalScore1'],subject_data['loseTotalScore2'],subject_data['loseTotalScore3'],subject_data['loseScore1'],subject_data['loseScore2'],subject_data['loseScore3'],subject_data['loseTotalRateScore1'],subject_data['loseTotalRateScore2'],subject_data['loseTotalRateScore3']))
-    csv_content.append(csv5)
-    csv_content.append(csv6.format(subject_data['loseScoreCount1'],subject_data['loseScoreCount2'],subject_data['loseScoreCount3'],subject_data['loseTotalScore1'],subject_data['loseTotalScore2'],subject_data['loseTotalScore3'],subject_data['loseScore1'],subject_data['loseScore2'],subject_data['loseScore3'],subject_data['loseTotalRateScore1'],subject_data['loseTotalRateScore2'],subject_data['loseTotalRateScore3']))
-    # 小分查询
-    output.append('小分情况')
-    csv_content.append('小分情况,,,,,')
-    csv_content.append(csv7)
-    for j in range(len(subject_data['questRates'])):
-        output.append(text4.format(subject_data['questRates'][j]['title'],questions_data[j]['score'],questions_data[j]['totalScore'],subject_data['questRates'][j]['scoreRate'],subject_data['questRates'][j]['classScoreRate'],subject_data['questRates'][j]['schoolScoreRate'],subject_data['questRates'][j]['unionScoreRate']))
-        csv_content.append(csv8.format(subject_data['questRates'][j]['title'],questions_data[j]['score'],questions_data[j]['totalScore'],subject_data['questRates'][j]['scoreRate'],subject_data['questRates'][j]['classScoreRate'],subject_data['questRates'][j]['schoolScoreRate'],subject_data['questRates'][j]['unionScoreRate']))
-    output.append('')
-    csv_content.append(',,,,,')
-
-# 写入文件
-if not os.path.exists('output'):
-    os.mkdir('output')
-with open('output/{}.txt'.format(sel_exam['desc']),'w+',encoding='utf-8') as f:
-    f.write('\n'.join(output))
-with open('output/{}.csv'.format(sel_exam['desc']),'w+',encoding='utf-8') as f:
-    f.write('\n'.join(csv_content))
-df = pd.read_csv('output/{}.csv'.format(sel_exam['desc']))
-df.to_excel('output/{}.xlsx'.format(sel_exam['desc']), index=False,header=False)
-os.remove('output/{}.csv'.format(sel_exam['desc']))
-print('结果已保存')
+getAndShowExamDetail(selectedExamId)
 
 # 登出
 logout()
