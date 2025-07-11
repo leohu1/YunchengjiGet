@@ -28,9 +28,9 @@ def logout():
     :return: None
     """
     print('登出中')
-    content = ycj.logout()
-    with open('session_id.txt', 'w+', encoding='utf-8') as f:
-        f.write(content)
+    if content := ycj.logout():
+        with open('session_id.txt', 'w+', encoding='utf-8') as f:
+            f.write(content)
 
 # 获取考试信息并打印出来
 def getAndShowExamDetail(examId):
@@ -198,8 +198,8 @@ while True:
     print('操作列表：')
     print('[0] 退出系统')
     print('获取考试数据：')
-    for i in range(len(exams)):
-        print('[{}] {}'.format(i+1,exams[i]['desc']))
+    for i, j in enumerate(exams):
+        print('[{}] {}'.format(i+1,j['desc']))
     print('[{}] 手动输入考试ID'.format(len(exams)+1))
     # 选择考试
     selectedExamId = 0

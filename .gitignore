@@ -5,3 +5,4 @@ session_id.txt
 main.spec
 test.py
 test.spec
+/__pycache__/
