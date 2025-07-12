@@ -20,7 +20,7 @@ class YunchengjiAPI:
             'User-Agent': self.user_agent_1,
             'Accept-Encoding': "gzip"
         }
-        self.headers2 = {
+        self.headers2: dict[str, str] = {
             'User-Agent': self.user_agent_2,
             'Accept': "application/json, text/plain, */*",
             'pragma': "no-cache",
@@ -33,6 +33,7 @@ class YunchengjiAPI:
             'accept-language': "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7"
         }
         self.session = requests.Session()
+        self.session.cookies = requests.utils.dict_from_cookiejar({"SESSIONID": session_id})
 
 
     def login(self,username,password):
