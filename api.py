@@ -2,7 +2,7 @@ import requests
 
 
 class YunchengjiAPI:
-    def __init__(self,session_id):
+    def __init__(self,session_id:str):
         # URL
         self.login_url_1 = "https://www.yunchengji.net/app/login?j_username={}&j_password={}"
         self.login_url_2 = "https://www.yunchengji.net/app/student/login"
@@ -33,7 +33,7 @@ class YunchengjiAPI:
             'accept-language': "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7"
         }
         self.session = requests.Session()
-        self.session.cookies = requests.utils.dict_from_cookiejar({"SESSIONID": session_id})
+        self.session.cookies = requests.utils.cookiejar_from_dict({"SESSIONID": session_id})
 
 
     def login(self,username,password):
@@ -45,7 +45,7 @@ class YunchengjiAPI:
         """
         
         response1 = self.session.post(self.login_url_1.format(username,password), headers={**self.headers1, 'content-length': "0"})
-        if response1.url == 'sessionout':
+        if response1.url == 'https://www.yunchengji.net/app/student/session/fail':
             return -1
         return 0
 

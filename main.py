@@ -20,7 +20,7 @@ else:
         session_id = f.read()
 
 # API对象
-ycj = api.YunchengjiAPI(session_id)
+ycj = api.YunchengjiAPI(str(session_id))
 
 def logout():
     """
