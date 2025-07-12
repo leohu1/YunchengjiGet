@@ -18,7 +18,8 @@ class YunchengjiAPI:
         self.user_agent_2 = "Mozilla/5.0 (Linux; Android 12; SDY-AN00 Build/V417IR; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/89.0.4389.72 MQQBrowser/6.2 TBS/046295 Mobile Safari/537.36"
         self.headers1 = {
             'User-Agent': self.user_agent_1,
-            'Accept-Encoding': "gzip"
+            'Accept-Encoding': "gzip", 
+            'content-length': "0"
         }
         self.headers2: dict[str, str] = {
             'User-Agent': self.user_agent_2,
@@ -44,7 +45,7 @@ class YunchengjiAPI:
         :return: None
         """
         
-        response1 = self.session.post(self.login_url_1.format(username,password), headers={**self.headers1, 'content-length': "0"})
+        response1 = self.session.post(self.login_url_1.format(username,password), headers=self.headers1)
         if response1.url == 'https://www.yunchengji.net/app/student/session/fail':
             return -1
         return 0
@@ -54,7 +55,7 @@ class YunchengjiAPI:
         获取考试列表
         :return:exams
         """
-        response = self.session.post(self.index_url, headers={**self.headers1, 'httpcache': "index", 'content-length': "0"})
+        response = self.session.post(self.index_url, headers={**self.headers1, 'httpcache': "index"})
         if response.json()['result'] == 'sessionout':
             print('用户名或密码错误')
             return -1
@@ -110,6 +111,6 @@ class YunchengjiAPI:
         登出
         :return: session_id
         """
-        self.session.post(self.logout_url_1, headers={**self.headers1, 'content-length': "0"})
-        response = self.session.get(self.logout_url_2, headers=self.headers1)
-        return response.cookies.get('SESSIONID')
+        self.session.post(self.logout_url_1, headers={**self.headers1})
+        return self.session.cookies.get('SESSIONID', "")
+    
