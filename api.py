@@ -16,6 +16,22 @@ class YunchengjiAPI:
         # Headers
         self.user_agent_1 = "ycj/5.7.0(Android;12)<okhttp>(<okhttp/3.10.0>)<brand_HONOR,model_SDY-AN00,maker_HONOR,device_Sandy>"
         self.user_agent_2 = "Mozilla/5.0 (Linux; Android 12; SDY-AN00 Build/V417IR; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/89.0.4389.72 MQQBrowser/6.2 TBS/046295 Mobile Safari/537.36"
+        self.headers1 = {
+            'User-Agent': self.user_agent_1,
+            'Accept-Encoding': "gzip"
+        }
+        self.headers2 = {
+            'User-Agent': self.user_agent_2,
+            'Accept': "application/json, text/plain, */*",
+            'pragma': "no-cache",
+            'cache-control': "no-cache",
+            'x-requested-with': "com.wish.ycj",
+            'sec-fetch-site': "same-origin",
+            'sec-fetch-mode': "cors",
+            'sec-fetch-dest': "empty",
+            'referer': "https://www.yunchengji.net/app/student/report/html/report.html",
+            'accept-language': "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7"
+        }
         self.session = requests.Session()
 
 
@@ -26,12 +42,8 @@ class YunchengjiAPI:
         :param password: 密码
         :return: None
         """
-        headers1 = {
-            'User-Agent': self.user_agent_1,
-            'Accept-Encoding': "gzip",
-            'content-length': "0"
-        }
-        response1 = self.session.post(self.login_url_1.format(username,password), headers=headers1)
+        
+        response1 = self.session.post(self.login_url_1.format(username,password), headers={**self.headers1, 'content-length': "0"})
         if response1.url == 'sessionout':
             return -1
         return 0
@@ -41,13 +53,7 @@ class YunchengjiAPI:
         获取考试列表
         :return:exams
         """
-        headers = {
-            'User-Agent': self.user_agent_1,
-            'Accept-Encoding': "gzip",
-            'httpcache': "index",
-            'content-length': "0"
-        }
-        response = self.session.post(self.index_url, headers=headers)
+        response = self.session.post(self.index_url, headers={**self.headers1, 'httpcache': "index", 'content-length': "0"})
         if response.json()['result'] == 'sessionout':
             print('用户名或密码错误')
             return -1
@@ -60,19 +66,8 @@ class YunchengjiAPI:
         :param exam_id: 考试id
         :return: exam_detail
         """
-        headers = {
-            'User-Agent': self.user_agent_2,
-            'Accept': "application/json, text/plain, */*",
-            'pragma': "no-cache",
-            'cache-control': "no-cache",
-            'x-requested-with': "com.wish.ycj",
-            'sec-fetch-site': "same-origin",
-            'sec-fetch-mode': "cors",
-            'sec-fetch-dest': "empty",
-            'referer': "https://www.yunchengji.net/app/student/report/html/report.html",
-            'accept-language': "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7"
-        }
-        response = self.session.get(self.total_url.format(exam_id), headers=headers)
+        
+        response = self.session.get(self.total_url.format(exam_id), headers=self.headers2)
         result = response.json()['desc']
         return result
 
@@ -82,20 +77,8 @@ class YunchengjiAPI:
         :param exam_id: 考试id
         :return: subject_list
         """
-        headers = {
-            'User-Agent': self.user_agent_2,
-            'Accept': "application/json, text/plain, */*",
-            'Accept-Encoding': "gzip, deflate",
-            'pragma': "no-cache",
-            'cache-control': "no-cache",
-            'x-requested-with': "com.wish.ycj",
-            'sec-fetch-site': "same-origin",
-            'sec-fetch-mode': "cors",
-            'sec-fetch-dest': "empty",
-            'referer': "https://www.yunchengji.net/app/student/report/html/report.html",
-            'accept-language': "zh-TW,zh-CN;q=0.9,zh;q=0.8,en-US;q=0.7,en;q=0.6"
-        }
-        response = self.session.get(self.subject_list_url.format(exam_id), headers=headers)
+    
+        response = self.session.get(self.subject_list_url.format(exam_id), headers=self.headers2)
         result = response.json()['desc']
         return result
 
@@ -106,20 +89,7 @@ class YunchengjiAPI:
         :param subject_id: 科目id
         :return:单科数据
         """
-        headers = {
-            'User-Agent': self.user_agent_2,
-            'Accept': "application/json, text/plain, */*",
-            'Accept-Encoding': "gzip, deflate",
-            'pragma': "no-cache",
-            'cache-control': "no-cache",
-            'x-requested-with': "com.wish.ycj",
-            'sec-fetch-site': "same-origin",
-            'sec-fetch-mode': "cors",
-            'sec-fetch-dest': "empty",
-            'referer': "https://www.yunchengji.net/app/student/report/html/report.html",
-            'accept-language': "zh-TW,zh-CN;q=0.9,zh;q=0.8,en-US;q=0.7,en;q=0.6"
-        }
-        response = self.session.get(self.subject_url.format(exam_id,subject_id), headers=headers)
+        response = self.session.get(self.subject_url.format(exam_id,subject_id), headers=self.headers2)
         result = response.json()['desc']
         return result
 
@@ -130,20 +100,7 @@ class YunchengjiAPI:
         :param subject_id:科目id
         :return:单科小分数据
         """
-        headers = {
-            'User-Agent': self.user_agent_2,
-            'Accept': "application/json, text/plain, */*",
-            'Accept-Encoding': "gzip, deflate",
-            'pragma': "no-cache",
-            'cache-control': "no-cache",
-            'x-requested-with': "com.wish.ycj",
-            'sec-fetch-site': "same-origin",
-            'sec-fetch-mode': "cors",
-            'sec-fetch-dest': "empty",
-            'referer': "https://www.yunchengji.net/app/student/report/html/sub-analysis.html",
-            'accept-language': "zh-TW,zh-CN;q=0.9,zh;q=0.8,en-US;q=0.7,en;q=0.6"
-        }
-        response = self.session.get(self.question_list_url.format(exam_id,subject_id), headers=headers)
+        response = self.session.get(self.question_list_url.format(exam_id,subject_id), headers=self.headers2)
         result = response.json()['desc']['questions']
         return result
 
@@ -152,15 +109,6 @@ class YunchengjiAPI:
         登出
         :return: session_id
         """
-        headers1 = {
-            'User-Agent': self.user_agent_1,
-            'Accept-Encoding': "gzip",
-            'content-length': "0"
-        }
-        self.session.post(self.logout_url_1, headers=headers1)
-        headers2 = {
-            'User-Agent': self.user_agent_1,
-            'Accept-Encoding': "gzip"
-        }
-        response = self.session.get(self.logout_url_2, headers=headers2)
+        self.session.post(self.logout_url_1, headers={**self.headers1, 'content-length': "0"})
+        response = self.session.get(self.logout_url_2, headers=self.headers1)
         return response.cookies.get('SESSIONID')
